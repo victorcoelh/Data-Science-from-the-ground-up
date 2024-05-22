@@ -58,16 +58,17 @@ class Vector(UserList):
 
 class Matrix(UserList):
     @classmethod
-    def make_matrix(num_rows: int, num_cols: int, entry_fn: Callable[[int, int], float]) -> Self:
+    def make_matrix(cls, num_rows: int, num_cols: int, entry_fn: Callable[[int, int], float]) -> Self:
         result = [[entry_fn(i, j)
                 for j in range(num_cols)]
                 for i in range(num_rows)]
         return Matrix(result)
     
     @classmethod
-    def identity_matrix(num_rows: int, num_cols: int) -> Self:
+    def identity_matrix(cls, num_rows: int, num_cols: int) -> Self:
         return Matrix.make_matrix(num_rows, num_cols, lambda i,j: 1 if i == j else 0)
     
+    @property
     def shape(self) -> Tuple[int, int]:
         rows = len(self)
         columns = len(self[0])
@@ -78,12 +79,3 @@ class Matrix(UserList):
     
     def get_column(self, column: int) -> Vector:
         return [row[column] for row in self]
-
-
-if __name__ == '__main__':
-    a = Vector([1, 2, 3])
-    b = Vector([4, 5, 6])
-    print(a+b)
-    print(a-b)
-    print(a*b)
-    print(a*5)
