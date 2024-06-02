@@ -1,8 +1,10 @@
 import math
 import random
 from matplotlib import pyplot as plt
+from typing import Tuple
 
 
+#TODO: Impelement partials
 class Distributions:
     @staticmethod
     def uniform_pdf(x: float) -> float:
@@ -23,6 +25,12 @@ class Distributions:
     @staticmethod
     def normal_cdf(x: float, mu: float = 0, sigma: float = 1) -> float:
         return (1 + math.erf((x - mu) / math.sqrt(2) / sigma)) / 2
+    
+    @staticmethod
+    def binomial_to_normal(p: float, n: int) -> Tuple[float, float]:
+        mu = p*n
+        sigma = math.sqrt(p * (1-p) * n)
+        return mu, sigma
     
     #TODO: reimplement inverse_normal_cdf
     @staticmethod
@@ -54,6 +62,36 @@ class Distributions:
         return sum([Distributions.bernoulli_trial(p) for i in range(n)])
 
 
+class NormalProbability:
+    @staticmethod
+    def below(x: float, mu: float = 0, sigma: float = 1) -> float:
+        return Distributions.normal_cdf(x, mu, sigma)
+    
+    @staticmethod
+    def above(x: float, mu: float = 0, sigma: float = 1) -> float:
+        return 1 - NormalProbability.below(x, mu, sigma)
+    
+    @staticmethod
+    def between(x: float, y: float, mu: float = 0, sigma: float = 1) -> float:
+        high = NormalProbability.below(y, mu, sigma)
+        low = NormalProbability.below(x, mu, sigma)
+        return high - low
+    
+    @staticmethod
+    def outside(x: float, y: float, mu: float = 0, sigma: float = 1) -> float:
+        return 1 - NormalProbability.between(x, y, mu, sigma)
+    
+    def upper_bound(p: float, mu: float = 0, sigma: float = 1) -> float:
+        return Distributions.inverse_normal_cdf(p, mu, sigma)
+    
+    def lower_bound(p: float, mu: float = 0, sigma: float = 1) -> float:
+        return Distributions.inverse_normal_cdf(1 - p, mu, sigma)
+    
+    def two_sided_bound(p: float, mu: float = 0, sigma: float = 1) -> float:
+        tail_probability = (1 - p) / 2  
+        return abs(NormalProbability.lower_bound(tail_probability, mu, sigma))
+
+
 def plot_function(func: callable, label: str, *args):
     x = [i/10 for i in range(-50, 50)]
     y = [func(x, *args) for x in x]
@@ -62,7 +100,9 @@ def plot_function(func: callable, label: str, *args):
 
 
 if __name__ == '__main__':
-    # visual representation of the distributions
+    print(NormalProbability.two_sided_bound(0.2))
+    
+    # visual representation of the probability density functions
     plot_function(Distributions.normal_pdf, "mu=0,sigma=1", 0, 1)
     plot_function(Distributions.normal_pdf, "mu=0,sigma=2", 0, 2)
     plot_function(Distributions.normal_pdf, "mu=0,sigma=0.5", 0, 0.5)
